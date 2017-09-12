@@ -1,0 +1,48 @@
+
+#lang racket
+(provide (all-defined-out))
+(require eopl)
+(require racket/trace)
+(require rackunit)
+(require rackunit/text-ui)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; operator table keeps all supported operations with metadata
+;; table has name, procedure,and arity for each supported operator
+;; table can be enhanced by adding signature of arguments
+
+(define opTable (list (list '+ + 'n)
+                      (list '- - 'n)
+                      (list '* * 'n)
+                      (list '/ / 'n)
+                      (list 'IsZero? zero? 1)))
+
+;; lookupOp: symbol? -> operator | null
+;; looking for match for operator symbol in a table for supported operations
+;; if match is found, metadata (p:procedure ar:arity) is returned
+
+(define lookup-op
+   (lambda (sym)
+     (let ((vals (filter 
+                    (lambda(u)(equal? (car u) sym)) 
+                    opTable)))
+
+             (if (not (null? vals))
+                 (rest (car vals))
+                 null))))
+
+
+;; op?: symbol? -> boolean
+;; looks up in the table for match, returns boolean
+(define op?
+   (lambda (sym)
+     (not (null? (lookup-op sym)))))
+
+;; get the procedure
+(define op 
+ (lambda (s)
+   (first (lookup-op s))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(check-equal? #t (op? 'IsZero?))
+(check-equal? #f (op? 'x))
