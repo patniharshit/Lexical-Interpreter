@@ -5,8 +5,12 @@
 (require racket/trace)
 (require rackunit)
 (require rackunit/text-ui)
-(require "ast.rkt" "run.rkt" "env.rkt" "parser.rkt")
+(require "ast.rkt" "ops.rkt" "env.rkt" "parser.rkt")
 
+(define rev-reduce (lambda (f x ls)
+    (if (null? ls) x
+    (rev-reduce f (f x (car ls)) (cdr ls)))))
+ 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;eval-ast : [Ast? env?]--> ans? or error
 ;; throws error for arity mismatch and unbound identifier
@@ -30,12 +34,20 @@
                                                    (mk-tuple  (first u)  
                                                               (expressible->denotable 
                                                                   (eval-ast (second u) env)))) 
-                                           binds))) ;evaluate asts to get values to be bound to identifiers
+                                           binds))) ;eval-astuate asts to get values to be bound to identifiers
 
-                                  (eval-ast body (extended-env tpls env)))] ;evaluate the body in the extended envirnment
+                                  (eval-ast body (extended-env tpls env)))] ;eval-astuate the body in the extended envirnment
+      
+      [assume& (binds body)   (let ((tpls (rev-reduce  (lambda(x u) 
+                                                   (extended-env (list (mk-tuple  (first u)  
+                                                              (expressible->denotable 
+                                                                  (eval-ast (second u) x)))) x)) 
+                                          env binds))) ;eval-astuate asts to get values to be bound to identifiers
+
+                                  (eval-ast body tpls))] ;eval-astuate the body in the extended envirnment
      
       [primApp (s rands) (letrec ((proc   (op s))     ;get the operator procedure
-                                   (args   (map (lambda(u)(eval-ast u env)) rands)))   ;evaluate operands to get actual arguments
+                                   (args   (map (lambda(u)(eval-ast u env)) rands)))   ;eval-astuate operands to get actual arguments
                            (apply proc args))]
       )))
 
@@ -70,16 +82,16 @@
 (check-equal? 31 (eval-ast (parse '(assume ((x 20)
                                             (y  (ifte (IsZero? (- a 1)) (+ a 10) a)))
                                            (+ x y)))
-                           (extended-env (list (mk-tuple 'a 1)) (empty-env))) "eval: assume-ifte-true")
+                           (extended-env (list (mk-tuple 'a 1)) (empty-env))) "eval-ast: assume-ifte-true")
 
 (check-equal? 30 (eval-ast (parse '(assume ((x 20)
                                             (y (ifte (IsZero? (- a 1)) (+ a 10) a)))
                                             (+ x y)))
-                           (extended-env (list (mk-tuple 'a 10)) (empty-env))) "eval: assume-ifte-false")
+                           (extended-env (list (mk-tuple 'a 10)) (empty-env))) "eval-ast: assume-ifte-false")
 ;;ifte:error:test_not_boolean
 (check-exn exn? (lambda () (eval-ast (parse '(assume ((x 20)
                                             (y (ifte  (- a 1) (+ a 10) a)))
                                            (+ x y)))
-                          (extended-env (list (mk-tuple 'a 10)) (empty-env)))) "eval: assume-ifte-test-not-boolean")
+                          (extended-env (list (mk-tuple 'a 10)) (empty-env)))) "eval-ast: assume-ifte-test-not-boolean")
 ;;unbound identifier 
 (check-exn exn? (lambda()(eval-ast (parse 'foo) (empty-env))) "eval-ast:unbound identifier")

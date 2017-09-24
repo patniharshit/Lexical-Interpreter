@@ -5,7 +5,7 @@
 (require racket/trace)
 (require rackunit)
 (require rackunit/text-ui)
-(require "ast.rkt"  "env.rkt" "parser.rkt" "eval.rkt")
+(require "ast.rkt"  "env.rkt" "parser.rkt" "eval.rkt" "ops.rkt")
 
 
 (define e1 (extended-env (list (mk-tuple 'x 2)(mk-tuple 'y 3)(mk-tuple 'z 4) (mk-tuple 'b 0)) (empty-env)))

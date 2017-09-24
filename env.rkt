@@ -5,7 +5,7 @@
 (require racket/trace)
 (require rackunit)
 (require rackunit/text-ui)
-(require "run.rkt")
+(require "ops.rkt")
 
 (define expressible? (or/c number? boolean?)) 
 (define ans? expressible?)

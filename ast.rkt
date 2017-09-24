@@ -5,7 +5,7 @@
 (require racket/trace)
 (require rackunit)
 (require rackunit/text-ui)
-(require "run.rkt")
+(require "ops.rkt")
 
 ;;Ast : num | primApp | id | b | ifte | assume 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -5,7 +5,7 @@
 (require racket/trace)
 (require rackunit)
 (require rackunit/text-ui)
-(require "ast.rkt" "run.rkt")
+(require "ast.rkt" "ops.rkt")
 
 ;; parse: list? --> Ast?
 ;; throws error if input is not in right format
@@ -37,6 +37,16 @@
                                                                   (first tail)))
                                                    (ast-body  (parse (second tail))))
                                            (assume ast-binds ast-body)))]
+                
+                [(equal? 'assume& head) (if (not (equal? 2 (length tail)))
+                                           (error "parse :" "Bad syntax for assume&")
+                                           (letrec ((ast-binds (map 
+                                                                 (lambda(u)
+                                                                        (mk-bind (first u)
+                                                                                 (parse (second u)))) 
+                                                                  (first tail)))
+                                                   (ast-body  (parse (second tail))))
+                                           (assume& ast-binds ast-body)))]
 
                 [(equal? 'ifte head) (if (not (equal? 3 (length tail))) 
                                               (error "parse :" "Bad syntax for ifte") 
